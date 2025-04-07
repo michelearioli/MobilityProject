@@ -22,7 +22,7 @@ Il progetto analizza i flussi di mobilità in Emilia-Romagna utilizzando dati fo
 > Per ottenere risultati significativi sarebbe necessario uno storico più lungo.
 
 
-## 🧪 Dataset
+## 📚 Dataset
 
 - **Fonte**: TIM Enterprise – dati agosto/settembre 2019.
 - **Contenuti**: Spostamenti tra aree (layerid → toid), dati demografici, motivi di spostamento, coordinate GeoJSON.
