@@ -63,4 +63,10 @@ Il progetto analizza i flussi di mobilità in Emilia-Romagna utilizzando dati fo
      "layerid": "ACE_ID"
    }
    ```
-
+## 🔁 Esempio completo via curl
+curl -X POST http://localhost:8080/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "date": "2025-06-01",
+    "layerid": "08|037|025|000|000"
+  }'
