@@ -2,20 +2,26 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
 import pandas as pd
+import logging
 import numpy as np
 from datetime import datetime
 from typing import Literal
 
-# Caricamento del modello, dello scaler e dell'encoder salvati
+LOG = logging.getLogger('uvicorn.info')
+
 try:
     model = joblib.load("mobility_model.pkl")
     scaler = joblib.load("scaler.pkl")
     label_encoder = joblib.load("label_encoder.pkl")
-    print("Modello, scaler e encoder caricati correttamente.")
+    LOG.info("Model, scaler, encoder loaded.")
 except Exception as e:
     print("Errore nel caricamento del modello o dei preprocessori:", e)
 
-# Definizione del formato dei dati in input
+class HealthCheck(BaseModel):
+    """Response model to validate and return when performing a health check."""
+
+    status: str = "OK"
+
 class MobilityRequest(BaseModel):
     date: str  # formato: 'YYYY-MM-DD'
     layerid: str  # ID geografico ACE come stringa
@@ -23,6 +29,19 @@ class MobilityRequest(BaseModel):
 # Istanza dell'app FastAPI
 app = FastAPI()
 
+@app.get("/health")
+
+def get_health() -> HealthCheck:
+    """
+    ## Perform a Health Check
+    Endpoint to perform a healthcheck on. This endpoint can primarily be used Docker
+    to ensure a robust container orchestration and management is in place. Other
+    services which rely on proper functioning of the API service will not deploy if this
+    endpoint returns any other HTTP status code except 200 (OK).
+    Returns:
+        HealthCheck: Returns a JSON response with the health status
+    """
+    return HealthCheck(status="OK")
 
 @app.post("/predict")
 def predict_mobility(req: MobilityRequest):
@@ -48,8 +67,6 @@ def predict_mobility(req: MobilityRequest):
             "weekend": weekend
         }])
 
-        print("Input ricevuto:", X)
-
         # Scaling
         X_scaled = scaler.transform(X)
 
@@ -59,10 +76,8 @@ def predict_mobility(req: MobilityRequest):
         # Inverso del log1p usato nel training
         y_pred = np.expm1(y_log_pred)
 
-        print("Predizione completata:", y_pred)
-
         return {"prediction": float(y_pred[0])}
 
     except Exception as e:
-        print("Errore durante la predizione:", e)
+        LOG.info("Errore durante la predizione:", e)
         return {"error": str(e)}
