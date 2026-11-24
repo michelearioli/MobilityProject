@@ -8,7 +8,9 @@ This work was extended into a peer-reviewed journal article:
 > N. Bicocchi, **M. Arioli**, M. Mamei, C. Petrovich. *From flows to events: spatiotemporal insights into Bologna's mobility using mobile networks.* Journal of Ambient Intelligence and Humanized Computing, Springer, 2026.
 > DOI: [10.1007/s12652-026-05127-x](https://doi.org/10.1007/s12652-026-05127-x)
 
-📄 Full thesis (Italian): [Tesi.pdf](Tesi.pdf)
+📄 Thesis (Italian): [Tesi.pdf](Tesi.pdf) · 📊 Presentation (Italian): [Presentazione.pdf](docs/Presentazione.pdf)
+
+> **Note:** this repository is kept as submitted, so that it matches the thesis. A critical review of its methodology and known bugs, and what I would do differently today, is in [RETROSPECTIVE.md](RETROSPECTIVE.md).
 
 ## Overview
 
@@ -42,8 +44,10 @@ All forecasting models use a **Gradient Boosting Regressor** with a log-transfor
 |---|---|---|
 | Dozza, local data only | 61 daily samples, features: date, weekday, week, holiday flag, month | MAE 732, MAPE 8.49% |
 | Dozza, full regional dataset | 28,548 samples (61 days × 468 ACEs), same features + ACE id | MAE 675, MAPE **8.04%** |
-| Generalization to all 468 ACEs | Per-ACE models, 41 training days / 20 test days | Mean MAPE **9.92%** with lag features (vs 12.08% and 12.47% for the calendar-based feature sets) |
+| Generalization to all 468 ACEs | Chronological split (41 training / 20 test days), MAPE averaged over ACEs | Mean MAPE 9.92% with lag features (vs 12.08% and 12.47% for the calendar-based feature sets)* |
 | Model behind the API | 70/30 split by day; features: date, ACE id, weekday, week, weekend | MAE 969, MAPE 8.92% |
+
+Results are as reported in the thesis. The Dozza experiments use a random day-level split, and the lag features in the generalization notebook are affected by a bug (*); both are discussed in [RETROSPECTIVE.md](RETROSPECTIVE.md).
 
 Main findings:
 
@@ -53,7 +57,7 @@ Main findings:
 
 ## Running the API
 
-The trained model, scaler and encoder are included as `.pkl` files in `mobility_api/`.
+The trained model, scaler and encoder are included as `.pkl` files in `mobility_api/`. They require scikit-learn 1.6.x.
 
 **With Docker:**
 
