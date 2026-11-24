@@ -1,81 +1,89 @@
-# 📍 Mobility Forecasting Project – Emilia Romagna (Italy)
+# Data-Driven Urban Mobility: Event Detection and Flow Forecasting
 
-## 📌 Descrizione del progetto
+BSc thesis in Computer Engineering, University of Modena and Reggio Emilia (UNIMORE), 2025.
+Supervisor: Prof. Nicola Bicocchi.
 
-Il progetto analizza i flussi di mobilità in Emilia-Romagna utilizzando dati forniti da TIM, basati su movimenti tra aree censuarie (ACE) tramite segnali telefonici. L'obiettivo è:
+This work was extended into a peer-reviewed journal article:
 
-- **Visualizzazione**: Creazione di mappe interattive dei flussi.
-- **Event Detection**: Rilevazione di eventi e anomalie nel traffico.
-- **Analisi dei flussi**: Analisi e rappresentazione dei flussi di spostamento.
-- **Modellazione predittiva**: Stima del numero di spostamenti tra zone tramite regressori ML.
+> N. Bicocchi, **M. Arioli**, M. Mamei, C. Petrovich. *From flows to events: spatiotemporal insights into Bologna's mobility using mobile networks.* Journal of Ambient Intelligence and Humanized Computing, Springer, 2026.
+> DOI: [10.1007/s12652-026-05127-x](https://doi.org/10.1007/s12652-026-05127-x)
 
-## 📁 Struttura del progetto
+📄 Full thesis (Italian): [Tesi.pdf](Tesi.pdf)
 
-| Cartella | Descrizione |
-|---------|-------------|
-| `data_analysis_and_cleansing/` | Script Python per la pulizia e caricamento su PostgreSQL (`data_cleansing1.py`, `data_cleansing2.py`) e analisi dei dati aggregati (`data_analysis_province.ipynb`, `data_analysis_ACE.ipynb`). |
-|`EventDetection/`| Sviluppo di algoritmo z-score per rilevazione anomalie nel traffico (`EventDetectionProvincia.ipynb`, `EventDetectionSingleACE.ipynb`) e analisi delle presenze per rilevazione eventi (`presence_Analysis.ipynb`). |
-| `experiments_on_single_ACE/` | Analisi dettagliata su singole aree ACE. Contiene: <br>• `ACE_in-out.ipynb`: analisi degli spostamenti in entrata/uscita da un singolo ACE. <br>• `ACE_in-out_CATEGORIES.ipynb`: analisi con suddivisione demografica (età, sesso, ecc). <br>• `Dozza_Analisys/`: approfondimento sull’area di Dozza con analisi specifiche. |
-|`flowOD/`| Script per la visualizzazione dei flussi di spostamento (`Flussi.ipynb`, `Flussi_interni_citta.ipynb`, `Flussi_verso_citta.ipynb`) e risultati (`mappageneraleARCHI.html`, `mappageneraleLINEE.html`). |
-| `GradientBoosting/` | Sviluppo modello Gradient Boosting Regressor per la predizione di persone in ingresso in un singolo ACE utilizzando due approcci: `Dozza/onlyDozza/Regression_compare.ipynb` dove il modello è allenato con i soli dati dell'ACE e `Dozza/fullDataset/Regression_toid_singleACE.ipynb` dove il modello viene allenato con anche i dati degli altri ACE. Infine `Generalization/BestFeature_all.ipynb` dove il modello del primo approccio viene applicato a tutti gli ACE e vengono confrontati tre set di feature. |
-| `mobility_api/` | API sviluppata con **FastAPI** per esporre il modello predittivo. Contiene: <br>• `main.py`: definizione dell'endpoint `/predict` che riceve `date` e `layerid` e restituisce la previsione. <br>• `mobility_model.pkl`, `label_encoder.pkl`, `scaler.pkl`: oggetti salvati del modello e preprocessori. <br>• `requirements.txt`: librerie richieste per l’esecuzione dell’API. Inoltre, contiene `model/Regressions_toid.ipynb` il modello utilizzato per l'API. |
-| `regressions/` | Notebook per regressioni: `Regressions_layerid.ipynb` (numero di persone che lasciano un ACE in una certa data), `Regressions_toid.ipynb` (numero di persone che entrano in un ACE in una certa data), `Regressions_ACE.ipynb` (numero di persone che lasciano un ACE per entrare in un altro ACE), `Regressions_province.ipynb` (numero di persone che lasciano una provincia per entare in un altra provincia). Include test con Random Forest, KNN, Gradient Boosting. |
-| `visualization/` | Mappa interattiva della mobilità (Folium) nel file `Folium_visualization.ipynb`. Rappresentazione dei flussi in partenza/arrivo per area geografica. Strumento per visualizzazione singolo ACE nel file `ACE_visualization.ipynb`. |
+## Overview
 
-## 🧪 Dataset
+The project analyzes and forecasts human mobility across the Emilia-Romagna region (Italy) using anonymized origin–destination data from **TIM Enterprise**, derived from mobile-network signals. The dataset covers August–September 2019 and records movements between elementary census areas (ACE) with demographic breakdowns: age, gender, nationality and trip purpose.
 
-- **Fonte**: TIM Enterprise – dati agosto/settembre 2019.
-- **Contenuti**: Spostamenti tra aree (layerid → toid), dati demografici, motivi di spostamento, coordinate GeoJSON.
-- **Importazione**: I CSV vengono puliti e caricati su database PostgreSQL.
+The pipeline covers four stages:
 
-## 📊 Modelli e Tecniche
+1. **Data engineering**: cleaning, validation and storage of ~36M raw records in PostgreSQL.
+2. **Exploratory analysis and visualization**: temporal, demographic and geographic patterns, with interactive origin–destination flow maps (Folium, GeoPandas).
+3. **Event detection**: a Z-score method on hourly net flows that flags anomalies such as trade fairs, sporting events and festivals.
+4. **Forecasting and deployment**: Gradient Boosting models that predict daily inbound flows for each ACE, served through a FastAPI + Docker prediction API.
 
-- **Modelli usati**: Random Forest, K-Nearest Neighbors (KNN), Gradient Boosting.
-- **Feature**: Data, giorno della settimana, weekend, etc.
-- **Valutazione**: MAE, MAPE.
-- **Output multi-target**: Previsioni su sesso, età, nazionalità e motivo dello spostamento.
+## Repository structure
 
-## 📌 Risultati principali
+| Folder | Content |
+|---|---|
+| `data_analysis_and_cleansing/` | Cleaning scripts and PostgreSQL loading (`data_cleansing1.py`, `data_cleansing2.py`); aggregate analyses by province and ACE; statistical analyses by day, time slot and category. |
+| `visualization/` | Interactive Folium map of regional mobility and a single-ACE visualization tool. |
+| `flowOD/` | Origin–destination flow analysis and maps (internal city flows, flows toward cities). |
+| `EventDetection/` | Z-score anomaly detection at province and single-ACE level, plus presence-based analysis. |
+| `experiments_on_single_ACE/` | Inbound/outbound analysis of single ACEs, by demographic category, and the Dozza case study. |
+| `regressions/` | Baseline regressors (Random Forest, KNN, Gradient Boosting) at ACE, province and origin/destination level, plus multi-output regression on demographic categories. |
+| `GradientBoosting/` | Final Gradient Boosting models: Dozza with local data only, Dozza with the full regional dataset, and generalization to all ACEs. |
+| `mobility_api/` | FastAPI service that exposes the trained model (`/predict`, `/health`), with Dockerfile and docker-compose. |
 
-- Visualizzazione efficace tramite Folium e dei flussi.
-- Corrispondenza tra anomalie rilevate ed eventi reali.
-- Gradient Boosting ha fornito i migliori risultati in termini di MAPE.
-- Utilizzando i solo dati dell'ACE il risultato migliore è stato MAPE 8.107% con le feature date e festivo, mentre utilizzando intero dataset si è arrivati a MAPE 8.041% con le feature: date, weekday, week, festivo, month.
-- Generalizzando il modello del primo approccio su tutti gli ACE e confrontando tre set di feature:
-   - set1 : date, weekday, weekend, week con MAPE 9.92% 
-   - set2 : date, festivo, month con MAPE 12.08% 
-   - set3 : date, lag_1, lag_2, lag_3, lag_7 con MAPE 12.47%
-- Il modello utilizzato per l'API, dove i dati sono stati divisi considerando il 70%
-dei giorni per l’addestramento e il restante 30% per il test, utilizzando come feature:
-date, toid, weekday, week e weekend, questo ha portato a un MAE di 969 e un MAPE 8.92%.
+## Methods and results
 
-## ▶️ Esecuzione dell'API (`mobility_api`)
+All forecasting models use a **Gradient Boosting Regressor** with a log-transformed target, Min-Max feature scaling and hyperparameters tuned with `GridSearchCV`. Accuracy is measured with MAE and MAPE.
 
-1. Assicurarsi di avere Python ≥ 3.9 installato.
-2. Installare le dipendenze:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Avviare il server con uvicorn:
-   ```bash
-   uvicorn main:app --reload
-   ```
-4. Accedere alla documentazione interattiva:
-   - Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-   - ReDoc: [http://localhost:8000/redoc](http://localhost:8000/redoc)
-5. Endpoint disponibile:
-   ```
-   POST /predict
-   Body JSON:
-   {
-     "date": "YYYY-MM-DD",
-     "layerid": "ACE_ID"
-   }
-   ```
-## 🔁 Esempio completo via curl
+| Experiment | Setup | Result |
+|---|---|---|
+| Dozza, local data only | 61 daily samples, features: date, weekday, week, holiday flag, month | MAE 732, MAPE 8.49% |
+| Dozza, full regional dataset | 28,548 samples (61 days × 468 ACEs), same features + ACE id | MAE 675, MAPE **8.04%** |
+| Generalization to all 468 ACEs | Per-ACE models, 41 training days / 20 test days | Mean MAPE **9.92%** with lag features (vs 12.08% and 12.47% for the calendar-based feature sets) |
+| Model behind the API | 70/30 split by day; features: date, ACE id, weekday, week, weekend | MAE 969, MAPE 8.92% |
+
+Main findings:
+
+- Urban and industrial areas (e.g. Bologna, Modena) are the most predictable, thanks to regular commuting patterns.
+- Tourist and mountain areas (Romagna coast, Apennines) are harder to forecast, because their flows depend on events, weather and holidays.
+- The Z-score detector matches real events, such as Cersaie at the Bologna fair district and motorsport events at the Imola circuit.
+
+## Running the API
+
+The trained model, scaler and encoder are included as `.pkl` files in `mobility_api/`.
+
+**With Docker:**
+
+```bash
+cd mobility_api
+docker compose up --build
+```
+
+**Without Docker** (Python ≥ 3.9):
+
+```bash
+cd mobility_api
+pip install -r requirements.txt
+uvicorn main:app --port 8080
+```
+
+Interactive docs: <http://localhost:8080/docs>
+
+**Example request:**
+
+```bash
 curl -X POST http://localhost:8080/predict \
   -H "Content-Type: application/json" \
-  -d '{
-    "date": "2025-06-01",
-    "layerid": "08|037|025|000|000"
-  }'
+  -d '{"date": "2025-06-01", "layerid": "08|037|025|000|000"}'
+```
+
+## Data availability
+
+The TIM mobility dataset is not included in this repository, because it is covered by confidentiality agreements with the data provider. The notebooks document the full processing pipeline, but they cannot be re-run without access to the data.
+
+## Tech stack
+
+Python · pandas · scikit-learn · PostgreSQL · Folium · GeoPandas · FastAPI · Uvicorn · Docker
